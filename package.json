@@ -1,0 +1,14 @@
+{
+  "name": "github-pages-firebase-roles",
+  "private": true,
+  "type": "module",
+  "description": "GitHub Pages + Firebase Spark 安全角色管理範例（前端免建置）",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --only firestore --project demo-course-hub \"node --test tests/firestore.rules.test.mjs\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.4.0",
+    "firebase-tools": "15.37.0"
+  }
+}

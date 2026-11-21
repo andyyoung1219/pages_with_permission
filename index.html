@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="GitHub Pages + Firebase 的免費課程網站與安全角色管理範例" />
+    <title>Course Hub | 課程與權限管理</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-glow" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Course Hub 首頁">
+        <span class="brand-mark">C<span>·</span></span>
+        <span class="brand-name">COURSE <strong>HUB</strong><small>課程管理示範站</small></span>
+      </a>
+      <span class="topbar-note">GitHub Pages × Firebase</span>
+    </header>
+
+    <main class="container">
+      <section id="setup-panel" class="panel setup-panel" hidden>
+        <h1>請先完成 Firebase 設定</h1>
+        <p>開啟 <code>firebase-config.js</code>，填入 Firebase 專案設定及開發者 UID，並依 README 安裝 Firestore Security Rules。</p>
+      </section>
+
+      <section id="auth-panel" class="auth-layout" hidden>
+        <div class="hero">
+          <span class="eyebrow">SIMPLE &amp; SECURE</span>
+          <h1>讓課程管理<br /><span>簡單一點。</span></h1>
+          <p>學生閱讀公告、管理員編輯內容，而開發者負責審核誰能成為管理員。每個人使用自己的帳號，重要權限由 Firebase 驗證。</p>
+          <div class="hero-points">
+            <span>✓ 學生預設權限</span>
+            <span>✓ 管理員權限控管</span>
+            <span>✓ Spark 免費方案</span>
+          </div>
+        </div>
+
+        <div class="panel auth-card">
+          <div class="tabs" role="tablist" aria-label="登入或註冊">
+            <button id="login-tab" class="tab active" type="button" aria-selected="true">登入</button>
+            <button id="register-tab" class="tab" type="button" aria-selected="false">建立帳號</button>
+          </div>
+
+          <form id="login-form" class="form-stack">
+            <h2>歡迎回來</h2>
+            <p class="muted">使用自己的帳號登入，系統會自動判斷身分。</p>
+            <label for="login-email">電子郵件</label>
+            <input id="login-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <label for="login-password">密碼</label>
+            <input id="login-password" type="password" autocomplete="current-password" minlength="6" placeholder="請輸入密碼" required />
+            <button class="primary-button" type="submit">登入網站</button>
+          </form>
+
+          <form id="register-form" class="form-stack" hidden>
+            <h2>建立 Student 帳號</h2>
+            <p class="muted">新註冊帳號一律是 Student，只有開發者能授予 Admin。</p>
+            <label for="register-name">顯示名稱</label>
+            <input id="register-name" type="text" maxlength="80" autocomplete="name" placeholder="例如：王小明" required />
+            <label for="register-email">電子郵件</label>
+            <input id="register-email" type="email" autocomplete="email" placeholder="you@example.com" required />
+            <label for="register-password">密碼（至少 6 碼）</label>
+            <input id="register-password" type="password" autocomplete="new-password" minlength="6" placeholder="至少 6 碼" required />
+            <button class="primary-button" type="submit">註冊 Student</button>
+          </form>
+        </div>
+      </section>
+
+      <section id="app-panel" hidden>
+        <div class="welcome-row">
+          <div>
+            <span class="eyebrow">DASHBOARD</span>
+            <h1>你好，<span id="display-name">使用者</span></h1>
+            <p class="muted">你可以在這裡查看課程公告，以及使用被授予的管理功能。</p>
+          </div>
+          <div class="account-block">
+            <span id="role-badge" class="role-badge">Student</span>
+            <span id="account-email" class="account-email"></span>
+            <button id="logout-button" type="button" class="ghost-button">登出帳號</button>
+          </div>
+        </div>
+
+        <nav class="section-tabs" aria-label="功能選單">
+          <button id="announcements-nav" class="section-tab selected" type="button">課程公告</button>
+          <button id="users-nav" class="section-tab" type="button" hidden>使用者權限管理</button>
+        </nav>
+
+        <section id="announcements-section" class="content-section">
+          <div class="section-heading">
+            <div>
+              <h2>課程公告</h2>
+              <p>所有已登入的 Student 與 Admin 都可以查看。</p>
+            </div>
+            <button id="new-announcement-button" class="primary-button small" type="button" hidden>＋ 新增公告</button>
+          </div>
+
+          <form id="announcement-form" class="panel editor" hidden>
+            <div class="editor-title-row">
+              <h3 id="editor-title">新增公告</h3>
+              <button id="cancel-editor-button" class="ghost-button" type="button">取消</button>
+            </div>
+            <label for="announcement-title">標題</label>
+            <input id="announcement-title" maxlength="120" placeholder="例如：Week 3 實作課程" required />
+            <label for="announcement-body">內容</label>
+            <textarea id="announcement-body" maxlength="5000" rows="5" placeholder="輸入公告內容……" required></textarea>
+            <button class="primary-button" type="submit">儲存公告</button>
+          </form>
+
+          <div id="announcement-list" class="announcement-list" aria-live="polite">
+            <div class="empty-state">載入公告中……</div>
+          </div>
+        </section>
+
+        <section id="users-section" class="content-section" hidden>
+          <div class="section-heading">
+            <div>
+              <h2>使用者權限管理</h2>
+              <p>只有開發者本人可以查看完整清單及修改角色。</p>
+            </div>
+            <span class="developer-tag">Developer only</span>
+          </div>
+          <div class="panel users-panel">
+            <div class="panel-topline">
+              <span>已註冊的使用者</span>
+              <span id="users-count" class="muted">—</span>
+            </div>
+            <div id="users-list" aria-live="polite">
+              <div class="empty-state">載入使用者中……</div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    </main>
+
+    <footer class="footer">Course Hub Demo · Hosted on GitHub Pages · Firebase Spark</footer>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
